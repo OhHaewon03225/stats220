@@ -1,0 +1,75 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+library(tidyverse)
+
+#loading the data from the csv
+logged_data <- read_csv('https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vTTo_mLevK1Lj3NXGYap7-MOmBd5lhhyOhASQUjjUN8jjbMi5atFOoZGGLkcjPf4PfLBztbqt5IOYBu/pub?output=csv')
+
+#renaming data
+latest_data <- logged_data %>% 
+  rename(gold = 2, econ_augment = 3)
+
+#finding the mean, max, and number of observations
+avg_gold <- round(mean(latest_data$gold, na.rm = TRUE), 1)
+max_gold <- max(latest_data$gold, na.rm = TRUE)
+game_count <- nrow(latest_data)
+```
+
+```{css}
+h2 {
+  color: #2c3e50;
+  font-family: sans-serif;
+}
+
+p {
+  color: #333333;
+  font-family: sans-serif;
+}
+```
+
+## Recreating a Korean Top 100 TFT Strategy
+
+The purpose of this analysis is to evaluate how viable a top 100 Korean TFT player's stratergy is, where they play high tempo and level to 8 on Stage 4-1 and rolldown all their gold on Stage 4-2.
+
+This report tracks how much gold will be left for the 4-2 rolldown based on whether an econ augment is taken or not. The data I have collected was via a Google Form.
+
+### Key Game Summaries
+```{r}
+# Using paste() to create comments on the summary values I have created
+
+summary_text_1 <- paste("Across", game_count, "games tracked, my average gold at the 4-2 rolldown is", avg_gold, "g.")
+summary_text_2 <- paste("The most gold I have managed to accumulate at this stage is", max_gold, "g.")
+
+print(summary_text_1)
+print(summary_text_2)
+
+
+#chart 1: Frequency of Econ Augments
+#this helps me find out how often econ augments are played on this comp and playstyle
+latest_data %>% 
+  ggplot() +
+  geom_bar(aes(x = econ_augment), fill = "#aecdd2") +
+  labs(title = "Frequency of Econ Augment Selection",
+       subtitle = "Data collected from recent TFT matches",
+       caption = "Source: Personal TFT match tracking via Google Forms",
+       x = "Took Econ Augment?",
+       y = "Number of Games")
+
+#chart 2: Average Gold at 4-2 by Augment Type
+#identifying if taking econ augments actually leads to higher gold at 4-2
+latest_data %>% 
+  ggplot() +
+  geom_bar(aes(x = gold, fill = econ_augment)) +
+  labs(title = "Econ Augment = more Gold?",
+       subtitle = "Comparing gold counts at 4-2 and econ augments from recent TFT matches",
+       caption = "Source: Personal TFT match tracking via Google Forms",
+       x = "Total Gold at 4-2",
+       y = "Number of Games",
+       fill = "Econ Augment?")
+
+```
